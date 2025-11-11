@@ -1,0 +1,27 @@
+anthropic==0.69.0
+authlib==1.6.5
+fastapi==0.118.0
+minio==7.2.18
+motor==3.7.1
+openpyxl==3.1.5
+passlib==1.7.4
+Pillow==11.3.0
+pydantic==2.11.9
+pydantic_settings==2.11.0
+pymongo==4.15.2
+pypandoc==1.15
+redis==6.4.0
+SQLAlchemy==2.0.43
+starlette==0.48.0
+typing_extensions==4.15.0
+uvicorn==0.37.0
+google-genai== 1.41.0
+#Google
+google-generativeai==0.8.5
+google-ai-generativelanguage==0.6.15
+protobuf>=3.20.2,<6.0.0
+#MySQL
+pymysql==1.1.2
+#pydantic[email]
+pydantic[email]>=2.0
+python-multipart == 0.0.2
