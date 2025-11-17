@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-
+from src.core.user.router import router as user_router
 from src.core.config import settings
 from src.core.exceptions import setup_exception_handlers
 
@@ -63,7 +63,7 @@ app.add_middleware(
 
 setup_exception_handlers(app)
 
-# app.include_router(router=auth_router, prefix="/auth")
+app.include_router(router=user_router, prefix="/user")
 
 
 
