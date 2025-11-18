@@ -1,5 +1,5 @@
-from user.entity import UserEntity
-from user.model import UserResponse
+from src.user.entity import UserEntity
+from src.user.model import UserResponse
 
 
 def user_entity_to_model(user: UserEntity) -> UserResponse:

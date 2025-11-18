@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from src.core.user.router import router as user_router
+from src.user.router import router as user_router
 from src.core.config import settings
 from src.core.exceptions import setup_exception_handlers
 
@@ -69,7 +69,7 @@ app.include_router(router=user_router, prefix="/user")
 
 @app.get("/")
 def read_root():
-	return {"message": "Hello, world!"}
+	return {"message": "Hello guys!"}
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import select, exists, inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from user.entity import UserEntity
+from src.user.entity import UserEntity
 
 
 class UserRepository:

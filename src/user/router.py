@@ -1,11 +1,10 @@
 from fastapi import Depends, APIRouter
 from starlette import status
 
-from src.core.auth.utils import get_current_user_id
 from src.core.models_response import success
-from src.core.user.dependencies import get_user_service
-from src.core.user.model import UserResponse, UserCreate
-from src.core.user.service import UserService
+from src.user.dependencies import get_user_service
+from src.user.model import UserResponse, UserCreate
+from src.user.service import UserService
 
 router = APIRouter()
 

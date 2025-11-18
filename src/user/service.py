@@ -1,16 +1,15 @@
 import logging
 import uuid
 
-from lxml.parser import result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from user.entity import UserEntity
-from user.exception import UserAlreadyExistsError, UserUpdateError
-from user.mapper import user_entity_to_model
-from user.model import UserCreate, UserUpdate, UserResponse
-from user.repository import UserRepository
-from user.utils import hash_password
+from src.user.entity import UserEntity
+from src.user.exception import EmailExistsError, UserUpdateError
+from src.user.mapper import user_entity_to_model
+from src.user.model import UserCreate, UserResponse, UserUpdate
+from src.user.repository import UserRepository
+from src.user.utils import hash_password, EmailConstraint
 
 
 class UserService:
@@ -20,8 +19,6 @@ class UserService:
 	async def create_user(self, user: UserCreate) -> UserEntity:
 		try:
 			repository = UserRepository(self.session)
-			if await repository.is_email_exist(str(user.email)):
-				raise UserAlreadyExistsError("Email already exists")
 			hashed_password = hash_password(user.password)
 			user_entity = UserEntity(
 				user_id=uuid.uuid4(),
@@ -32,9 +29,10 @@ class UserService:
 			)
 			await repository.create_user(user_entity)
 			return user_entity
-		except IntegrityError:
-			await self.session.rollback()
-			raise UserAlreadyExistsError("User already exists")
+		except IntegrityError as e:
+			exception_response = e.args[0]
+			if EmailConstraint in exception_response:
+				raise EmailExistsError()
 		except Exception as e:
 			await self.session.rollback()
 			logging.error(e)
@@ -43,8 +41,6 @@ class UserService:
 	async def update_user(self, user_id: uuid.uuid4(), user: UserUpdate) -> UserResponse:
 		try:
 			repository = UserRepository(self.session)
-			if await repository.is_email_exist(str(user.email)):
-				raise UserAlreadyExistsError("Email already exists")
 			hashed_password = hash_password(user.password)
 			user_entity = UserEntity(
 				user_id=user_id,
@@ -60,9 +56,10 @@ class UserService:
 			user_response = user_entity_to_model(result)
 
 			return user_response
-		except IntegrityError:
-			await self.session.rollback()
-			raise UserAlreadyExistsError("User already exists")
+		except IntegrityError as e:
+			exception_response = e.args[0]
+			if EmailConstraint in exception_response:
+				raise EmailExistsError()
 		except Exception as e:
 			await self.session.rollback()
 			logging.error(e)
