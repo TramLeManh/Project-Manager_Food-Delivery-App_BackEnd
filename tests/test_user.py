@@ -2,10 +2,13 @@ import logging
 import uuid
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
+from src.user.entity import UserEntity
+from src.user.exception import EmailExistsError
+from src.user.repository import UserRepository
+from src.user.utils import EmailConstraint
 from tests.test_ import get_real_session, get_test_session
-from user.entity import UserEntity
-from user.repository import UserRepository
 
 
 @pytest.fixture()
@@ -28,14 +31,17 @@ async def test_create_user(user_repository):
 		)
 		user_id = await user_repository.create_user(user)
 		assert user_id == user.user_id
-	except Exception as e:
-		logging.error(e.args[0])
+	except IntegrityError as e:
+		exception_response = e.args[0]
+		if EmailConstraint in exception_response:
+			print("Email already exists")
+			raise EmailExistsError()
 
 
 @pytest.mark.asyncio
 async def test_retrieves_user_by_id(get_test_session):
 	user_repository: UserRepository = UserRepository(get_test_session)
-	email="existing_user@example.com"
+	email = "existing_user@example.com"
 	user = UserEntity(
 		user_id=uuid.uuid4(),
 		email=email,
@@ -47,18 +53,18 @@ async def test_retrieves_user_by_id(get_test_session):
 
 @pytest.mark.asyncio
 async def test_update_user_email(get_test_session):
-	#1. Assump create a user with old value
+	# 1. Assump create a user with old value
 	user_repository: UserRepository = UserRepository(get_test_session)
 	original_user = UserEntity(user_id=uuid.uuid4(), email="old@gmail.com")
 	created_id = await user_repository.create_user(original_user)
-	#2. Update user
+	# 2. Update user
 	updates = UserEntity(email="new@gmail.com")
 	updated = await user_repository.update_user(created_id, updates)
-	#3. Check update result
+	# 3. Check update result
 	assert updated is not None
 	assert updated.user_id == created_id
 	assert updated.email == "new@gmail.com"
-	#4. Check database again to make sure the data is updated
-	fetched = await user_repository.get_user_by_mail(created_id)
+	# 4. Check database again to make sure the data is updated
+	fetched = await user_repository.get_user_by_mail(updated.email)
 	assert fetched is not None
 	assert fetched.email == "new@gmail.com"
