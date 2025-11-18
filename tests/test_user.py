@@ -68,3 +68,22 @@ async def test_update_user_email(get_test_session):
 	fetched = await user_repository.get_user_by_mail(updated.email)
 	assert fetched is not None
 	assert fetched.email == "new@gmail.com"
+
+
+@pytest.mark.asyncio
+async def test_updates_password(get_test_session):
+	session = get_test_session
+	repository = UserRepository(session)
+
+	# Create a user
+	user = UserEntity(email="test@example.com", password="old_password")
+	session.add(user)
+	await session.commit()
+
+	# Update the password
+	result = await repository.update_password("test@example.com", "new_password")
+
+	# Verify the password was updated
+	updated_user = await session.get(UserEntity, user.user_id)
+	assert result is True
+	assert updated_user.password == "new_password"

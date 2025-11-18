@@ -51,3 +51,14 @@ class UserRepository:
 
 		await self.session.commit()
 		return existing_user
+
+	async def update_password(self, email: str, new_hashed_password: str) -> bool:
+		stmt = select(UserEntity).filter_by(email=email)
+		result = await self.session.execute(stmt)
+		user = result.scalar_one_or_none()
+		if user is None:
+			return False
+
+		user.password = new_hashed_password  # Assuming `password` is a column in `UserEntity`
+		await self.session.commit()
+		return True
