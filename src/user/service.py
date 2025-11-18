@@ -1,5 +1,6 @@
 import logging
 import uuid
+from typing import Any, Coroutine
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +39,7 @@ class UserService:
 			logging.error(e)
 			raise
 
-	async def update_user(self, user_id: uuid.uuid4(), user: UserUpdate) -> UserResponse:
+	async def update_user(self, user_id: uuid.uuid4(), user: UserUpdate) -> UserResponse | None:
 		try:
 			repository = UserRepository(self.session)
 			hashed_password = hash_password(user.password)
@@ -68,5 +69,4 @@ class UserService:
 	async def get_user_profile(self, user_id: str) -> UserResponse:
 		repository = UserRepository(self.session)
 		user = await repository.get_user_by_id(user_id)
-
 		return user_entity_to_model(user)
