@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 
+import redis
 from fastapi import Depends, Request
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from pymongo.asynchronous.database import AsyncDatabase
@@ -56,3 +57,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 		except Exception:
 			await session.rollback()
 			raise
+# 3. Redis
+def get_redis_client():
+	return redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, username=settings.REDIS_USERNAME,
+	                   password=settings.REDIS_PASSWORD, decode_responses=True)
