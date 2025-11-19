@@ -10,6 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 from src.user.router import router as user_router
 from src.core.config import settings
 from src.core.exceptions import setup_exception_handlers
+from src.auth.router import router as auth_router
 
 
 @asynccontextmanager
@@ -64,7 +65,7 @@ app.add_middleware(
 setup_exception_handlers(app)
 
 app.include_router(router=user_router, prefix="/user")
-
+app.include_router(router=auth_router, prefix="/auth")
 
 
 @app.get("/")
