@@ -66,7 +66,7 @@ class UserService:
 			logging.error(e)
 			raise
 
-	async def get_user_profile(self, user_id: str) -> UserResponse:
+	async def get_user_profile(self, user_id: uuid.UUID) -> UserResponse:
 		repository = UserRepository(self.session)
 		user = await repository.get_user_by_id(user_id)
 		return user_entity_to_model(user)

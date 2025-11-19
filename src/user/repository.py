@@ -21,7 +21,7 @@ class UserRepository:
 		user_entity = result.scalar_one_or_none()
 		return user_entity
 
-	async def get_user_by_id(self, user_id: uuid.uuid4()) -> UserEntity:
+	async def get_user_by_id(self, user_id: uuid.UUID) -> UserEntity:
 		stmt = select(UserEntity).filter(UserEntity.user_id == user_id)
 		result = await self.session.execute(stmt)
 		user_entity = result.scalar_one_or_none()

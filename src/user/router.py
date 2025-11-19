@@ -31,3 +31,12 @@ async def register(
 	data = await user_service.update_user(user_id=user_id, user=user_data)
 	message = "Update user successfully"
 	return success(message=message, data=data)
+
+
+@router.get("/me", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register(
+		user_id: uuid.UUID = Depends(get_current_user_id),
+		user_service: UserService = Depends(get_user_service)
+):
+	data = await user_service.get_user_profile(user_id=user_id)
+	return success(data=data)
