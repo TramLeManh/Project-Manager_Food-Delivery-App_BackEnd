@@ -1,16 +1,16 @@
 import logging
 import uuid
-from typing import Any, Coroutine
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.utils import hash_password
 from src.user.entity import UserEntity
 from src.user.exception import EmailExistsError, UserUpdateError
 from src.user.mapper import user_entity_to_model
 from src.user.model import UserCreate, UserResponse, UserUpdate
 from src.user.repository import UserRepository
-from src.user.utils import hash_password, EmailConstraint
+from src.user.utils import EmailConstraint
 
 
 class UserService:

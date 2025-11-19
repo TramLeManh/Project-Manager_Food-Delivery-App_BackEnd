@@ -1,18 +1,11 @@
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
-from src.core.config import settings
-from authlib.jose import jwt
 import logging
+import random
+import string
+from datetime import datetime, timedelta, timezone
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from authlib.jose import jwt
 
-
-def hash_password(password: str) -> str:
-	return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-	return pwd_context.verify(plain_password, hashed_password)
+from src.core.config import settings
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -25,6 +18,10 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 	to_encode.update({"exp": expire})
 	encoded_jwt = jwt.encode({'alg': settings.JWT_ALGORITHM}, to_encode, settings.JWT_SECRET_KEY)
 	return encoded_jwt
+
+
+def generate_otp():
+	return ''.join(random.choices(string.digits, k=settings.OTP_LENGTH))
 
 
 def verify_token(token: str):
