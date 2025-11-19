@@ -9,6 +9,10 @@ def generate_uuid() -> str:
 	return str(uuid4()).split("-")[0]
 
 
+def generate_session_id() -> str:
+	return str(uuid4())
+
+
 def hash_password(password: str) -> str:
 	return pwd_context.hash(password)
 
