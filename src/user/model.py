@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, EmailStr, field_validator
 
+from src.core.models_response import invalid_request
+
 
 class UserBase(BaseModel):
 	email: EmailStr
@@ -33,7 +35,11 @@ class UserCreate(UserBase):
 	password: str
 	isAdmin: Optional[bool] = False
 
-
+	@field_validator("password")
+	def validate_password(cls, v):
+		if len(v) < 8:
+			raise invalid_request(message="Password must be at least 8 characters")
+		return v
 
 	model_config = {
 		"json_schema_extra": {
