@@ -14,8 +14,8 @@ async def login(
 		form_data: OAuth2PasswordRequestForm = Depends(),
 		auth_service: AuthService = Depends(get_auth_service),
 ):
-	access_token = await auth_service.authenticate_user(form_data.username, form_data.password)
-	return {"access_token": access_token, "token_type": "bearer"}
+	token:Token = await auth_service.authenticate_user(form_data.username, form_data.password)
+	return token.model_dump()
 
 
 @router.post("/request-otp", response_model=OTPResponse)

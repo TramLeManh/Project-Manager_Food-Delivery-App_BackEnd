@@ -1,8 +1,10 @@
 import uuid
 
-from sqlalchemy import Column, UUID, String, DateTime, func
+from sqlalchemy import Column, Enum, String
+from sqlalchemy import UUID, DateTime, func
 
 from src.core.entity.Base import Base
+from src.user.model import UserRole
 
 
 class UserEntity(Base):
@@ -17,6 +19,11 @@ class UserEntity(Base):
 	password = Column(String(100), nullable=False)
 	# Tương ứng với: created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	created_at = Column(DateTime(timezone=True), server_default=func.current_timestamp())
+	role = Column(
+		Enum(UserRole, name="user_role_enum"),
+		nullable=False,
+		default=UserRole.USER
+	)
 
 	def __repr__(self):
 		return f"<User(user_id={self.user_id}, email='{self.email}', email='{self.email}')>"

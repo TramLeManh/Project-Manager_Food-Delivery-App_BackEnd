@@ -1,11 +1,10 @@
+import asyncio
 import logging
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 from src.auth.exception import InvalidUsernamePassword, TokenError, OTPError, NotVerifiedError
-from src.auth.model import OTPResponse
+from src.auth.model import OTPResponse, Token
 from src.auth.service_OTP import OTPService
 from src.auth.service_email import EmailService
 from src.auth.utils import create_access_token, generate_otp
@@ -17,11 +16,12 @@ from src.user.repository import UserRepository
 
 class AuthService:
 	def __init__(self, session: AsyncSession, otp_service: OTPService, email_service: EmailService):
+		self._tasks = []
 		self.session = session
 		self.otp_service = otp_service
 		self.email_service = email_service
 
-	async def authenticate_user(self, email: str, password: str) -> str:
+	async def authenticate_user(self, email: str, password: str) -> Token:
 		try:
 			# 1. Find user from db
 			repository = UserRepository(self.session)
@@ -36,8 +36,9 @@ class AuthService:
 			# Check active user:
 			# 3. Generate access token
 			access_token = create_access_token(data={"id": user_id})
-
-			return access_token
+			user_role: str = user.role.value
+			token: Token = Token(access_token=access_token, role=user_role)
+			return token
 		except TokenError as e:
 			raise
 		except Exception as e:
@@ -54,14 +55,12 @@ class AuthService:
 			# 2. Generate OTP
 			otp = generate_otp()
 			session_id = self.otp_service.store_otp(email, otp)
-			email_sent = self.email_service.send_otp_email(email, otp)
-			if not email_sent:
-				# Clean up Redis entry if email fails
-				self.otp_service.invalidate_session(session_id)
-				raise HTTPException(
-					status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-					detail="Failed to send OTP email. Please try again."
-				)
+			task = asyncio.create_task(
+				self.email_service.send_otp_email(email, otp)
+
+			)
+			self._tasks.append(task)
+			task.add_done_callback(self._tasks.remove)
 			return OTPResponse(session_id=session_id)
 
 		except UserError:
@@ -87,7 +86,7 @@ class AuthService:
 		try:
 			self.otp_service.verify_otp(session_id, otp)
 			return True
-		except OTPError:
-			raise
+		except OTPError as e:
+			raise e
 		except Exception:
 			raise

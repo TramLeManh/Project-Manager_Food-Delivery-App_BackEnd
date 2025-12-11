@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import List
 
-from src.restaurant.entity import DistrictEntity, CategoryEntity
+from src.core.exceptions import BaseError
+from src.core.utils import iso_to_24h_time
 from src.restaurant.entity import RestaurantEntity
-from src.restaurant.model import RestaurantFilter, RestaurantModel, District, Category, RestaurantCreate
+from src.restaurant.model import RestaurantFilter, RestaurantModel, RestaurantCreate, BaseRestaurantModel
 from src.restaurant.repository import RestaurantRepository
+from src.restaurant.utils import from_entity_to_model
 
 
 class RestaurantService:
@@ -13,17 +15,16 @@ class RestaurantService:
 	def __init__(self, repository: RestaurantRepository):
 		self.repository = repository
 
+	async def get_list_owner_restaurant(self, owner_id: str) -> list[BaseRestaurantModel]:
+		pass
+
 	async def get_restaurants(self, request: RestaurantFilter) -> List[RestaurantModel] | None:
 		try:
-			data: list[RestaurantEntity] = await self.repository.get_restaurants(request.category, request.district)
-			list_restaurants = []
-			if data is None:
-				return list_restaurants
-			for entity in data:
-				restaurant = from_entity_to_model(entity=entity)
-
-				list_restaurants.append(restaurant)
-			return list_restaurants
+			data = await self.repository.filter_restaurant(
+				district=request.district,
+				category=request.category
+			)
+			return [from_entity_to_model(e) for e in data]
 		except Exception:
 			raise
 
@@ -39,18 +40,20 @@ class RestaurantService:
 			raise
 
 	async def create_restaurant(self, owner_id: str, request: RestaurantCreate):
-
+		openTime, closeTime = iso_to_24h_time(request.open_time), iso_to_24h_time(request.close_time)
 		try:
-			categories = [CategoryEntity(**c.model_dump(by_alias=True)) for c in request.categories]
+			rate = request.rating
+			if rate is None:
+				rate = 5.0
 			restaurant_entity = RestaurantEntity(
 				name=request.name,
 				address=request.address,
 				image_url=request.image,
-				openTime=request.open_time,
-				closeTime=request.close_time,
-				district=DistrictEntity(**request.district.model_dump()),
-				categories=categories,
-				rating=2.0,
+				openTime=openTime,
+				closeTime=closeTime,
+				district=request.district_id,
+				categories=request.categories,
+				rating=rate,
 				created_at=datetime.utcnow(),
 			)
 			restaurant_entity.owner_id = owner_id
@@ -60,13 +63,40 @@ class RestaurantService:
 			print(e)
 			raise
 
+	async def update_restaurant(self, owner_id: str, restaurant_id, request: RestaurantCreate):
+		openTime, closeTime = iso_to_24h_time(request.open_time), iso_to_24h_time(request.close_time)
+		try:
+			restaurant_entity = RestaurantEntity(
+				restaurant_id=restaurant_id,
+				name=request.name,
+				address=request.address,
+				image_url=request.image,
+				openTime=openTime,
+				closeTime=closeTime,
+				district=request.district_id,
+				categories=request.categories,
+				rating=request.rating,
+				created_at=datetime.utcnow(),
+			)
+			restaurant_entity.owner_id = owner_id
+			await self.repository.update_restaurant(restaurant_id, restaurant_entity)
+			return True
+		except Exception as e:
+			print(e)
+			raise
 
-def from_entity_to_model(entity: RestaurantEntity) -> RestaurantModel:
-	open_time: str = entity.openTime.strftime("%H:%M")
-	close_time: str = entity.closeTime.strftime("%H:%M")
-	categories = [Category(**c.model_dump()) for c in entity.categories]
-	restaurant = RestaurantModel(restaurantId=entity.id, name=entity.name, address=entity.address,
-	                             picture=entity.image, rating=entity.rating, openTime=open_time,
-	                             closeTime=close_time, district=District(**entity.district.model_dump()),
-	                             categories=categories)
-	return restaurant
+	async def delete_restaurant(self, owner_id, restaurant_id):
+		try:
+			result = await self.repository.delete_restaurant(owner_id=owner_id, restaurant_id=restaurant_id)
+			if result is False:
+				raise BaseError(message="Delete restaurant fail")
+		except Exception as e:
+			raise
+
+	async def get_admin_restaurants(self, admin_id) -> list[RestaurantModel]:
+		try:
+			data = await self.repository.get_admin_restaurants(admin_id=admin_id
+			                                                   )
+			return [from_entity_to_model(e) for e in data]
+		except Exception:
+			raise

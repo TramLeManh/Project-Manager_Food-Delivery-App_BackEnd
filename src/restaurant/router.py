@@ -18,7 +18,7 @@ async def list_restaurants(
 	request = RestaurantFilter(district=district, category=category)
 	data = await restaurant_service.get_restaurants(request)
 	return success(data=data)
-
+router.redirect_slashes = False
 
 @router.get("/{restaurant_id}", response_model=list[RestaurantModel])
 async def list_restaurants(restaurant_id: str, restaurant_service: RestaurantService = Depends(get_restaurant_service)):
@@ -26,12 +26,4 @@ async def list_restaurants(restaurant_id: str, restaurant_service: RestaurantSer
 	return success(data=data)
 
 
-@router.post("/create")
-async def list_restaurants(
-		data: RestaurantCreate,
-		restaurant_service: RestaurantService = Depends(get_restaurant_service),
-		user_id=Depends(get_current_user_id),
-):
-	await restaurant_service.create_restaurant(owner_id=user_id, request=data)
-	message = "Created restaurant success"
-	return success(message=message)
+

@@ -43,7 +43,8 @@ class UserRepository:
 
 		for attr in mapper.column_attrs:
 			key = attr.key
-			if key == "user_id":
+			#04/12/2025 Skip user_id và role
+			if key == "user_id" or key == "role":
 				continue
 
 			value = getattr(updates, key)
@@ -62,3 +63,9 @@ class UserRepository:
 		user.password = new_hashed_password  # Assuming `password` is a column in `UserEntity`
 		await self.session.commit()
 		return True
+
+	async def get_user_by_id(self, user_id: str) -> UserEntity:
+		stmt = select(UserEntity).filter(UserEntity.user_id == user_id)
+		result = await self.session.execute(stmt)
+		user_entity = result.scalar_one_or_none()
+		return user_entity

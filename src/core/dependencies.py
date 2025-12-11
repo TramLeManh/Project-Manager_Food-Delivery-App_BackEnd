@@ -13,7 +13,6 @@ from src.core.config import settings
 
 # 1. Mongo
 def get_client(request: Request) -> AsyncDatabase:
-	"""Get MongoDB client from app.state (initialized in lifespan)."""
 	return request.app.state.mongo_client
 
 

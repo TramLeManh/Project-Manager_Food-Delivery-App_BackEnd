@@ -1,5 +1,6 @@
 from fastapi import Depends
 
+from src.auth.service_email import EmailService
 from src.core.dependencies import get_mongo_db
 from src.restaurant.repository import RestaurantRepository
 from src.restaurant.service import RestaurantService

@@ -5,30 +5,24 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
-class CategoryEntity(BaseModel):
-	id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-	name: str
-
-
 class DistrictEntity(BaseModel):
 	id: str = Field()
 	name: str
 
 
-
 class RestaurantEntity(BaseModel):
-	id: str = Field(alias="_id", default_factory=lambda: str(uuid.uuid4()))
+	restaurant_id: str = Field(alias="restaurant_id", default_factory=lambda: str(uuid.uuid4()))
 	owner_id: str = Field(alias="ownerId", default_factory=lambda: str(uuid.uuid4()))
 
 	address: str
-	district: DistrictEntity
-	categories: List[CategoryEntity]
+	district: int
+	categories: List[int]
 
 	name: str
 	image: str = Field(alias="image_url")
 	rating: Optional[float] = Field(alias="rating")
-	openTime: time
-	closeTime: time
+	openTime: str
+	closeTime: str
 	created_at: datetime
 
 	class Config:

@@ -47,8 +47,9 @@ def server_error(status_code: Optional[int] = 200, message: Optional[str] = None
 	return JSONResponse(status_code=status_code, content=response.model_dump(exclude_none=True))
 
 
-def invalid_request(status_code: Optional[int] = 200) -> JSONResponse:
-	message = "Invalid request"
+def invalid_request(status_code: Optional[int] = 200,message: Optional[str]= None) -> JSONResponse:
+	if message is None:
+		message = f"Invalid Request"
 	response = APIResponse(code=ResponseStatus.INVALID_REQUEST, message=message)
 	return JSONResponse(status_code=status_code, content=response.model_dump(exclude_none=True))
 def invalid_token(status_code: Optional[int] = 200) -> JSONResponse:

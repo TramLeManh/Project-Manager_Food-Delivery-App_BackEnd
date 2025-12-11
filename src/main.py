@@ -5,24 +5,30 @@ from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI
+from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import HTMLResponse
 
-from src.user.router import router as user_router
+from src.articles.router import router as article_router
+from src.auth.router import router as auth_router
 from src.core.config import settings
 from src.core.exceptions import setup_exception_handlers
-from src.auth.router import router as auth_router
+from src.order.router import router as booking_router
+from src.restaurant.router import router as restaurant_router
+from src.user.router import router as user_router
+from src.user.router_admin import router as admin_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 	print("✅ Logging configured at DEBUG level")
-	# mongo_client = AsyncDatabase(os.environ["MONGODB_URL"])
-	# app.state: State
-	# app.state.mongo_client = mongo_client
+	mongo_client = AsyncIOMotorClient(settings.MONGO_URI)
+	db = mongo_client["pm_project"]
+	app.state.mongo_client = mongo_client
+	app.state.mongo_db = db
 	print("✅ MongoDB client initialized")
-	yield  # app runs here
-	# noinspection PyTypeChecker
-	# mongo_client.close()  # ✅ works fine in Motor >= 3.0
+	yield
+	mongo_client.close()
 	print("👋 App shutting down and MongoDB client closed")
 
 
@@ -67,10 +73,21 @@ setup_exception_handlers(app)
 app.include_router(router=user_router, prefix="/user")
 app.include_router(router=auth_router, prefix="/auth")
 
+app.include_router(router=restaurant_router, prefix="/restaurant")
+
+app.include_router(router=article_router, prefix="/article")
+app.include_router(router=booking_router, prefix="/booking")
+app.include_router(router=admin_router, prefix="/admin")
+
 
 @app.get("/")
 def read_root():
 	return {"message": "Hello guys!"}
+
+
+@app.get("/{full_path:path}")
+def catch_all(full_path: str):
+	return HTMLResponse(content="", status_code=404)
 
 
 if __name__ == "__main__":
@@ -82,4 +99,4 @@ if __name__ == "__main__":
 
 	# Lưu ý khi chạy trên máy thật thì host="
 	# Chạy bằng main:app
-	uvicorn.run("main:app", host="0.0.0.0", port=1412, reload=True)
+	uvicorn.run("main:app", host="0.0.0.0", port=1412, reload=True, forwarded_allow_ips="*")

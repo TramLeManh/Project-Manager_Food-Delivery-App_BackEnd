@@ -7,8 +7,15 @@ from pydantic import EmailStr, Field
 
 class Token(BaseModel):
 	access_token: str
-	token_type: str = "bearer"
-
+	role:str
+	model_config = {
+			"json_schema_extra": {
+				"example": {
+					"access_token": "12345678",
+					"role": "ADMIN"
+				}
+			}
+		}
 
 class OTPRequest(BaseModel):
 	email: EmailStr

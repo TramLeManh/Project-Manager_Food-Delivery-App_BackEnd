@@ -10,12 +10,12 @@ from src.core.config import settings
 from src.core.dependencies import get_session, get_redis_client
 
 security = HTTPBearer()
+from src.auth.service_email import EmailService
 
 
 def get_auth_service(session: AsyncSession = Depends(get_session), redis_client=Depends(get_redis_client)
                      ) -> AuthService:
 	otp_service = OTPService(redis_client=redis_client)
-	from src.auth.service_email import EmailService
 	email_service = EmailService()
 	return AuthService(session=session, otp_service=otp_service,email_service=email_service)
 
