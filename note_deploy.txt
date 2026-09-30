@@ -1,0 +1,3 @@
+- Khi deploy nhớ mount ./src: ./app/src
+- Port mặc định fastapi là 1412.
+- docker compose up --build
